@@ -1,4 +1,4 @@
-// 01 NARROWING: make the compiler prove it is safe
+// MPLT Lab 1 - 01 NARROWING: make the compiler prove it is safe          (10 min, pairs)
 // Lecture 2, slides 13-14.
 //
 // GOAL : 0 red underlines AND every line in the Logs tab says PASS.
@@ -17,6 +17,9 @@ const users = new Map<number, User>([
 // Return the user's name, or "unknown" when there is no such user.
 function userName(id: number): string {
   const u = users.get(id);
+  if(u===undefined){
+    return "unknown";
+  }
   return u.name;                               // <- fix me
 }
 
@@ -24,20 +27,26 @@ function userName(id: number): string {
 // Return the part of the email after "@", or "no email".
 function emailDomain(id: number): string {
   const u = users.get(id);
+  if(u === undefined || u.email === null){
+    return "no email";
+  }
   return u.email.split("@")[1];                // <- fix me
 }
 
 // TASK 3 - typeof narrowing. An id arrives as a number (42) or as a string ("ab-7").
 //   number -> "#0042"  (pad to 4 digits)        string -> "#AB-7"  (upper case)
 function formatId(id: number | string): string {
-  return "#" + id.padStart(4, "0");            // <- fix me
+  if(typeof id === "number"){
+    return "#" + String(id).padStart(4, "0");
+  }
+  return "#" + id.toUpperCase();            // <- fix me
 }
 
 // TASK 4 - PREDICT first: no red underline here. Is the function correct?
 // What does  label(0)  return? Run, then fix it:
 // 0 is a valid quantity, only null means "unknown".
 function label(qty: number | null): string {
-  if (qty) { return "qty=" + qty; }
+  if (qty !== null) { return "qty=" + qty; }
   return "unknown";
 }
 
@@ -57,3 +66,4 @@ check("T3 formatId(42)", () => formatId(42), "#0042");
 check("T3 formatId('ab-7')", () => formatId("ab-7"), "#AB-7");
 check("T4 label(0)", () => label(0), "qty=0");
 check("T4 label(null)", () => label(null), "unknown");
+
