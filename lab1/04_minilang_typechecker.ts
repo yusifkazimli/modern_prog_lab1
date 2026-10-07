@@ -1,4 +1,4 @@
-// 04 MINILANG: write the type checker
+// MPLT Lab 1 - 04 MINILANG: write the type checker                        (15 min, pairs)
 // Lecture 2, slides 19-22. In the lecture YOU were the type checker. Now you write it.
 // One typing rule = one  case  in  check() .
 // Three rules are done (T-Int, T-Var, T-Gt). You write T-Str, T-Add and T-If.
@@ -41,12 +41,28 @@ function check(e: Expr, env: Env): Type {
       return "bool";
 
     // TASK 1 - T-Str:  a string literal has type string.
+    case "str":
+      return "string";
 
     // TASK 2 - T-Add:  int + int : int      string + string : string
     //                  any other combination: throw new CheckError("...")
+    case "add": {
+      const l = check(e.left, env);
+      const r = check(e.right, env);
+      if (l === "int" && r === "int") return "int";
+      if (l === "string" && r === "string") return "string";
+      throw new CheckError("cannot add " + l + " and " + r);
+    }
 
     // TASK 3 - T-If:   the condition must be bool, both branches must have the SAME
     //                  type T, and the whole expression has type T.
+    case "if": {
+      expectType(check(e.cond, env), "bool", "condition of if");
+      const thenType = check(e.then, env);
+      const elseType = check(e.else, env);
+      expectType(elseType, thenType, "branches of if");
+      return thenType;
+    }
   }
 }
 
@@ -94,3 +110,5 @@ for (const [source, expr, wanted] of programs) {
 // S2  New rule. Add  { kind: "eq"; left: Expr; right: Expr }  for  e1 == e2 .
 //     First WRITE the rule as a comment (premises above the line, conclusion below),
 //     then add the case. Should  1 == "1"  be accepted? You are the language designer.
+// S3  Design question. TypeScript itself would give  if c then "a" else 0  the type
+//     string | number  instead of rejecting it. What would rule T-If look like then?
